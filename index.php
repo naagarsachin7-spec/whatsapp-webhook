@@ -1,13 +1,22 @@
 <?php
-header('Content-Type: text/plain');
+$verify_token = "my_verify_token_123";
 
-echo "REQUEST_METHOD:\n";
-var_dump($_SERVER['REQUEST_METHOD']);
+// ✅ Webhook verification (GET)
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (
+        isset($_GET['hub_mode']) &&
+        $_GET['hub_mode'] === 'subscribe' &&
+        isset($_GET['hub_verify_token']) &&
+        $_GET['hub_verify_token'] === $verify_token
+    ) {
+        echo $_GET['hub_challenge'];
+        exit;
+    }
+}
 
-echo "\n\nRAW QUERY STRING:\n";
-var_dump($_SERVER['QUERY_STRING']);
+// ✅ Incoming WhatsApp messages (POST)
+$input = file_get_contents("php://input");
+file_put_contents("log.txt", $input . PHP_EOL, FILE_APPEND);
 
-echo "\n\n_GET ARRAY:\n";
-var_dump($_GET);
-
-exit;
+http_response_code(200);
+echo "EVENT_RECEIVED";
