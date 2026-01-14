@@ -1,7 +1,9 @@
 <?php
 $verify_token = "my_verify_token_123";
 
-// ✅ Webhook verification (GET)
+/* =========================
+   WEBHOOK VERIFICATION
+========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (
         isset($_GET['hub_mode']) &&
@@ -14,11 +16,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-// ✅ Incoming WhatsApp messages (POST)
+/* =========================
+   HANDLE INCOMING MESSAGE
+========================= */
 $input = file_get_contents("php://input");
+$data  = json_decode($input, true);
 
-// 🔥 Log to Render logs (STDOUT)
-error_log("WHATSAPP_EVENT: " . $input);
+// Safety check
+if (
+    isset($data['entry'][0]['changes'][0]['value']['messages'][0])
+) {
+    $message = $data['entry'][0]['changes'][0]['value']['messages'][0];
+
+    $from      = $message['from']; // phone number
+    $msgType  = $message['type'];
+    $time     = date('Y-m-d H:i:s', $message['timestamp']);
+
+    $text = '';
+    if ($msgType === 'text') {
+        $text = $message['text']['body'];
+    }
+
+    // ✅ THIS IS YOUR "FRESH MESSAGE"
+    error_log("NEW MESSAGE | From: $from | Message: $text | Time: $time");
+
+    // 👇 from here you can do ANYTHING
+}
 
 http_response_code(200);
 echo "EVENT_RECEIVED";
