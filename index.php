@@ -22,25 +22,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 $input = file_get_contents("php://input");
 $data  = json_decode($input, true);
 
-// Safety check
-if (
-    isset($data['entry'][0]['changes'][0]['value']['messages'][0])
-) {
-    $message = $data['entry'][0]['changes'][0]['value']['messages'][0];
+// ✅ REMOVE RAW LOGGING
+// error_log("WHATSAPP_EVENT: " . $input);
 
-    $from      = $message['from']; // phone number
-    $msgType  = $message['type'];
-    $time     = date('Y-m-d H:i:s', $message['timestamp']);
+if (isset($data['entry'][0]['changes'][0]['value']['messages'][0])) {
 
+    $msg = $data['entry'][0]['changes'][0]['value']['messages'][0];
+
+    $from = $msg['from'];
+    $time = date('Y-m-d H:i:s', $msg['timestamp']);
     $text = '';
-    if ($msgType === 'text') {
-        $text = $message['text']['body'];
+
+    if ($msg['type'] === 'text') {
+        $text = $msg['text']['body'];
     }
 
-    // ✅ THIS IS YOUR "FRESH MESSAGE"
+    // ✅ CLEAN, FRESH MESSAGE
     error_log("NEW MESSAGE | From: $from | Message: $text | Time: $time");
-
-    // 👇 from here you can do ANYTHING
 }
 
 http_response_code(200);
